@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -101,15 +102,23 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 ControllerTypeInfo = typeof(ControllerWithAttributes).GetTypeInfo()
             };
             var bindingContext = new ActionBindingContext();
-
+            var bindingContextAccessor = new ActionBindingContextAccessor
+            {
+                ActionBindingContext = bindingContext
+            };
             var services = GetServices();
-            services.GetRequiredService<IActionBindingContextAccessor>().ActionBindingContext = bindingContext;
             var httpContext = new DefaultHttpContext
             {
                 RequestServices = services
             };
+            var propertyActivators = new[]
+            {
+                new DefaultControllerPropertyActivator(bindingContextAccessor)
+            };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(
+                new DefaultControllerActivator(new DefaultTypeActivatorCache()),
+                propertyActivators);
 
             // Act
             var result = factory.CreateController(context);
@@ -256,17 +265,20 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     .Returns(metadataProvider);
             services.Setup(s => s.GetService(typeof(IObjectModelValidator)))
                     .Returns(new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider));
-            services.Setup(s => s.GetService(typeof(IActionBindingContextAccessor)))
-                .Returns(new ActionBindingContextAccessor());
             return services.Object;
         }
 
-        private static DefaultControllerFactory CreateControllerFactory(IControllerActivator controllerActivator = null)
+        private static DefaultControllerFactory CreateControllerFactory(
+            IControllerActivator controllerActivator = null,
+            IEnumerable<IControllerPropertyActivator> propertyActivators = null)
         {
             controllerActivator = controllerActivator ?? Mock.Of<IControllerActivator>();
-            var propertyActivators = new IControllerPropertyActivator[]
+            if (propertyActivators == null)
             {
-                new DefaultControllerPropertyActivator(new ActionBindingContextAccessor()),
+                propertyActivators = new[]
+                {
+                    new DefaultControllerPropertyActivator(new ActionBindingContextAccessor()),
+                };
             };
 
             return new DefaultControllerFactory(controllerActivator, propertyActivators);

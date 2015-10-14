@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if MOCK_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -597,7 +596,7 @@ Environment.NewLine;
                 "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
                 "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
-                dataTypeName + 
+                dataTypeName +
                 "]]\" value=\"HtmlEncode[[" + expected + "]]\" />");
 
             var offset = TimeSpan.FromHours(0);
@@ -650,7 +649,7 @@ Environment.NewLine;
                 "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
                 "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
-                dataTypeName + 
+                dataTypeName +
                 "]]\" value=\"HtmlEncode[[" + expected + "]]\" />");
 
             // Place DateTime-local value in current timezone.
@@ -708,7 +707,7 @@ Environment.NewLine;
                 "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
                 "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
-                dataTypeName + 
+                dataTypeName +
                 "]]\" value=\"HtmlEncode[[Formatted as 2000-01-02T03:04:05.0600000+00:00]]\" />");
 
             var offset = TimeSpan.FromHours(0);
@@ -845,9 +844,9 @@ Environment.NewLine;
             // Arrange
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), 
-                                              It.Is<string>(view => String.Equals(view, 
-                                                                                  "EditorTemplates/String"))))
+                .Setup(v => v.FindPartialView(
+                    It.IsAny<ActionContext>(),
+                    "EditorTemplates/String"))
                 .Returns(ViewEngineResult.Found(string.Empty, new Mock<IView>().Object))
                 .Verifiable();
             var html = DefaultTemplatesUtilities.GetHtmlHelper(new object(), viewEngine: viewEngine.Object);
@@ -1166,4 +1165,3 @@ Environment.NewLine;
         }
     }
 }
-#endif
