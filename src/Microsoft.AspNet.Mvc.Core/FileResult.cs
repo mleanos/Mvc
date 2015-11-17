@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="contentType">The Content-Type header of the response.</param>
         protected FileResult(string contentType)
-            : this(new MediaTypeHeaderValue(contentType))
+            : this(MediaTypeHeaderValue.Parse(contentType))
         {
             if (contentType == null)
             {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc
                 contentDisposition.SetHttpFileName(FileDownloadName);
                 context.HttpContext.Response.Headers[HeaderNames.ContentDisposition] = contentDisposition.ToString();
             }
-            
+
             logger.FileResultExecuting(FileDownloadName);
             return WriteFileAsync(response);
         }
