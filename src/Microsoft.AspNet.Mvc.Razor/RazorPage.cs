@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -17,7 +16,6 @@ using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,25 +41,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         public RazorPage()
         {
             SectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
-
             _writerScopes = new Stack<TextWriter>();
         }
 
         /// <summary>
         /// An <see cref="HttpContext"/> representing the current request execution.
         /// </summary>
-        public HttpContext Context
-        {
-            get
-            {
-                if (ViewContext == null)
-                {
-                    return null;
-                }
-
-                return ViewContext.HttpContext;
-            }
-        }
+        public HttpContext Context => ViewContext?.HttpContext;
 
         /// <inheritdoc />
         public string Path { get; set; }
@@ -77,9 +63,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         [RazorInject]
         public HtmlEncoder HtmlEncoder { get; set; }
-
-        /// <inheritdoc />
-        public IPageExecutionContext PageExecutionContext { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="DiagnosticSource.DiagnosticSource"/> instance used to instrument the page execution.
@@ -107,41 +90,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
         /// </summary>
-        public virtual ClaimsPrincipal User
-        {
-            get
-            {
-                if (Context == null)
-                {
-                    return null;
-                }
-
-                return Context.User;
-            }
-        }
+        public virtual ClaimsPrincipal User => Context?.User;
 
         /// <summary>
         /// Gets the dynamic view data dictionary.
         /// </summary>
-        public dynamic ViewBag
-        {
-            get
-            {
-                return ViewContext?.ViewBag;
-            }
-        }
+        public dynamic ViewBag => ViewContext?.ViewBag;
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
         /// </summary>
         /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
-        public ITempDataDictionary TempData
-        {
-            get
-            {
-                return ViewContext?.TempData;
-            }
-        }
+        public ITempDataDictionary TempData => ViewContext?.TempData;
 
         /// <inheritdoc />
         public Func<TextWriter, Task> RenderBodyDelegateAsync { get; set; }
@@ -153,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
         /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; private set; }
+        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; }
 
         /// <inheritdoc />
         public abstract Task ExecuteAsync();
@@ -938,7 +898,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             const string BeginContextEvent = "Microsoft.AspNet.Mvc.Razor.BeginInstrumentationContext";
 
-            PageExecutionContext?.BeginContext(position, length, isLiteral);
             if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
             {
                 DiagnosticSource.Write(
@@ -958,7 +917,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             const string EndContextEvent = "Microsoft.AspNet.Mvc.Razor.EndInstrumentationContext";
 
-            PageExecutionContext?.EndContext();
             if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
             {
                 DiagnosticSource.Write(
