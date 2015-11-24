@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Json.Logging
             _jsonInputFormatterCrashed = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 1,
-                "Json input formatting failed with error {0}");
+                "Json input formatting failed, exception was '{0}'.");
         }
 
         public static void JsonInputException(this ILogger logger, Exception exception)
