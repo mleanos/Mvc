@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Formatters.Json.Logging;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -72,6 +72,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 return InputFormatterResult.FailureAsync();
             }
 
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<FileResult>();
+
             var request = context.HttpContext.Request;
             using (var streamReader = context.ReaderFactory(request.Body, effectiveEncoding))
             {
@@ -106,6 +109,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
                         var metadata = GetPathMetadata(context.Metadata, eventArgs.ErrorContext.Path);
                         context.ModelState.TryAddModelError(key, eventArgs.ErrorContext.Error, metadata);
+
+                        logger.JsonInputException(eventArgs.ErrorContext.Error);
 
                         // Error must always be marked as handled
                         // Failure to do so can cause the exception to be rethrown at every recursive level and
